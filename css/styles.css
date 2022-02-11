@@ -1,0 +1,45 @@
+* {
+  font-family: 'Avenir', 'Helvetica', sans-serif;
+}
+
+.tables {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.btn {
+  margin-top: 2px;
+  width: 100%;
+}
+
+.table_div {
+  margin: 4px;
+}
+
+table {
+  border-collapse: collapse;
+  text-align: center;
+  width: 100%;
+  border-spacing: 0px;
+}
+
+table th,
+table td {
+  padding: 2px 2px;
+  width: 30px;
+}
+
+tr th:first-child,
+tr td:first-child {
+  padding: 2px 2px 2px 0px;
+}
+
+tr th:last-child,
+tr td:last-child {
+  padding: 2px 0px 2px 2px;
+}
+
+table input[type='number'] {
+  width: 30px;
+}
