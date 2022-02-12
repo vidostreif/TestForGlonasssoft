@@ -10,10 +10,12 @@ window.onload = () => {
   btnAdd2.addEventListener('click', () => addString(tab2))
   btnCalculate.addEventListener('click', () => calculate(tab1, tab2, tab3))
 
+  // массивы для удобства передачи данных в canvas
   let mas1 = []
   let mas2 = []
   let mas3 = []
 
+  // добавление строки в таблицу
   const addString = (tab, withBtn = true) => {
     const num =
       'str' +
@@ -39,6 +41,7 @@ window.onload = () => {
     tab.querySelector('tbody').append(newTr)
   }
 
+  // расчет и передача данных в canvas
   const calculate = (inTab1, inTab2, inTab3) => {
     const tab1Legth = getTabLegth(inTab1)
     const tab2Legth = getTabLegth(inTab2)
@@ -93,10 +96,12 @@ window.onload = () => {
     drawAll()
   }
 
+  // получить количество строк в таблице
   const getTabLegth = (tabl) => {
     return tabl.querySelector('tbody').querySelectorAll('tr').length
   }
 
+  // получить input из таблицы
   const getTabInput = (tabl, str, vector) => {
     return tabl
       .querySelector('tbody')
@@ -111,14 +116,14 @@ window.onload = () => {
       this.closeEnough = 20 // допустимое растояние удаленности мыши от точки изменения размера при нажатии
       this.pointOffsetX = 50 //смещение точки изменения размера X
       this.pointOffsetY = 70 //смещение точки изменения размера Y
-      this.dragBR = false
+      this.drag = false
       this.minSizeCanv = 150 //минимальный размер canvas
       this.canv = canv
-      this.mas = mas
+      this.mas = mas // массив данных
       this.ctx = this.canv.getContext('2d')
 
-      this.canv.width = 500
-      this.canv.height = 500
+      this.canv.width = 500 // стартовая ширина
+      this.canv.height = 500 // стартовая высота
 
       this.mouseDown = this.mouseDown.bind(this)
       this.mouseUp = this.mouseUp.bind(this)
@@ -135,68 +140,61 @@ window.onload = () => {
 
     //отрисовка
     draw = () => {
-      let { canv, ctx, mas, indent, step } = this
+      const { canv, ctx, mas, indent, step } = this
+      const indPlusStep = step + indent
+      const width = canv.width
+      const height = canv.height
 
       if (mas.length === 0) mas.push({ x: 0, y: 0 })
       //обнуление
       ctx.fillStyle = 'white'
-      ctx.fillRect(0, 0, canv.width, canv.height)
+      ctx.fillRect(0, 0, width, height)
 
+      // вычисляем минимальное и максимальное число в переданных данных
       let min = Number.MAX_VALUE
       let max = Number.MIN_VALUE
       for (let index = 0; index < mas.length; index++) {
-        min = Math.min(mas[index].x, min)
-        min = Math.min(mas[index].y, min)
-        max = Math.max(mas[index].x, max)
-        max = Math.max(mas[index].y, max)
+        min = Math.min(mas[index].x, mas[index].y, min)
+        max = Math.max(mas[index].x, mas[index].y, max)
       }
 
+      //шаг чисел
       let numberStep =
         (max - min) /
-        Math.ceil(
-          (Math.min(canv.width, canv.height) - indent - step - step - 15) / step
-        ) //шаг чисел
+        Math.ceil((Math.min(width, height) - indPlusStep - step - 15) / step)
 
       //рисуем направляющие
       ctx.fillStyle = 'black' // Задаём чёрный цвет для линий
       ctx.lineWidth = 2.0 // Ширина линии
       ctx.beginPath() // Запускает путь
       ctx.moveTo(indent, 10) // Указываем начальный путь
-      ctx.lineTo(indent, canv.height - indent) // Перемешаем указатель
-      ctx.lineTo(canv.width - 10, canv.height - indent) // Ещё раз перемешаем указатель
+      ctx.lineTo(indent, height - indent) // Перемешаем указатель
+      ctx.lineTo(width - 10, height - indent) // Ещё раз перемешаем указатель
       ctx.stroke() // Делаем контур
-      ctx.fillText('X', canv.width - 10, canv.height - indent + 10) //X
+      ctx.font = '12px Georgia'
+      ctx.fillText('X', width - 10, height - indent + 10) //X
       ctx.fillText('Y', indent - 10, 10) //X
-
-      // Цвет для рисования
-      ctx.fillStyle = 'black'
+      ctx.font = '10px Verdana'
 
       // Цикл для отображения значений по X
-      let iterationX = 0
-      for (
-        var x = step + indent;
-        x < canv.width - 15;
-        x += step, iterationX++
-      ) {
+      let iterX = 0
+      for (let x = indPlusStep; x < width - 15; x += step, iterX++) {
         //вертикальные
         ctx.fillText(
-          (min + numberStep * iterationX).toFixed(2),
+          (min + numberStep * iterX).toFixed(2),
           x - 10,
-          canv.height - indent + 20
+          height - indent + (iterX % 2 === 0 ? 20 : 30)
         )
         ctx.beginPath()
-        ctx.moveTo(x, canv.height - indent + 5)
-        ctx.lineTo(x, canv.height - indent)
+        ctx.moveTo(x, height - indent + 5)
+        ctx.lineTo(x, height - indent)
         ctx.stroke()
       }
+
       // Цикл для отображения значений по Y
-      let iterationY = 0
-      for (
-        var y = canv.height - indent - step;
-        y > 15;
-        y -= step, iterationY++
-      ) {
-        ctx.fillText((min + numberStep * iterationY).toFixed(2), indent - 30, y)
+      let iterY = 0
+      for (let y = height - indPlusStep; y > 15; y -= step, iterY++) {
+        ctx.fillText((min + numberStep * iterY).toFixed(2), indent - 35, y)
         ctx.beginPath()
         ctx.moveTo(indent - 5, y)
         ctx.lineTo(indent, y)
@@ -205,62 +203,55 @@ window.onload = () => {
 
       //рисуем сетку
       let lastX = 0 // позиция последней линии по X
-      for (var x = step + indent; x < canv.width - 15; x += step) {
+      for (let x = indPlusStep; x < width - 15; x += step) {
         //вертикальные
         lastX = x
         ctx.beginPath()
         ctx.strokeStyle = '#7a7979'
         ctx.lineWidth = 0.5
         ctx.moveTo(x, 0)
-        ctx.lineTo(x, canv.height - indent)
+        ctx.lineTo(x, height - indent)
         ctx.closePath()
         ctx.stroke()
       }
       let lastY = 0 // позиция последней линии по Y
-      for (var y = canv.height - indent - step; y > 15; y -= step) {
+      for (let y = height - indPlusStep; y > 15; y -= step) {
         //Горизонтальные
         lastY = y
         ctx.beginPath()
         ctx.moveTo(indent, y)
-        ctx.lineTo(canv.width, y)
+        ctx.lineTo(width, y)
         ctx.closePath()
         ctx.stroke()
       }
 
       //рисуем график
       ctx.strokeStyle = '#7a1959' // Задаём цвет для линий
+      ctx.fillStyle = '#7a1929' // Задаём цвет для подписей
+      ctx.font = '16px Georgia'
       ctx.lineWidth = 3.0 // Ширина линии
-      let di = max - min
-      let ourWidth =
-        lastX - indent - step - Math.max(iterationX - iterationY, 0) * step
+      let di = max - min //Рабочий диапазон
+      let ourWidth = lastX - indPlusStep - Math.max(iterX - iterY, 0) * step //Рабочий диапазон по ширине в px
       let ourHeight =
-        canv.height -
-        indent -
-        step -
-        lastY -
-        Math.max(iterationY - iterationX, 0) * step
+        height - indPlusStep - lastY - Math.max(iterY - iterX, 0) * step //Рабочий диапазон по высоте в px
 
       for (let index = 0; index < mas.length; index++) {
-        ctx.fillText(
-          mas[index].x.toFixed(2) + ' ' + mas[index].y.toFixed(2),
-          indent + step + (mas[index].x - min) * (ourWidth / di),
-          canv.height - indent - step - (mas[index].y - min) * (ourHeight / di)
-        )
+        // вычисляем координаты точки
+        const x = indPlusStep + (mas[index].x - min) * (ourWidth / di)
+        const y = height - indPlusStep - (mas[index].y - min) * (ourHeight / di)
+        // рисуем точку
+        ctx.beginPath()
+        ctx.arc(x, y, 3, 0, 2 * Math.PI)
+        ctx.fill()
+        // подписываем
+        ctx.fillText((index + 1).toString(), x + 5, y - 5)
+        // если есть следующая точка, то рисуем линию к ней
         if (index < mas.length - 1) {
           ctx.beginPath()
-          ctx.moveTo(
-            indent + step + (mas[index].x - min) * (ourWidth / di),
-            canv.height -
-              indent -
-              step -
-              (mas[index].y - min) * (ourHeight / di)
-          )
+          ctx.moveTo(x, y)
           ctx.lineTo(
-            indent + step + (mas[index + 1].x - min) * (ourWidth / di),
-            canv.height -
-              indent -
-              step -
-              (mas[index + 1].y - min) * (ourHeight / di)
+            indPlusStep + (mas[index + 1].x - min) * (ourWidth / di),
+            height - indPlusStep - (mas[index + 1].y - min) * (ourHeight / di)
           )
           ctx.stroke()
         }
@@ -272,23 +263,21 @@ window.onload = () => {
     //зумирование
     relativeCoors = (ev) => {
       return {
-        mouseX: ev.pageX - ev.target.offsetLeft,
-        mouseY: ev.pageY - ev.target.offsetTop,
+        mouseX: ev.pageX - this.canv.offsetLeft,
+        mouseY: ev.pageY - this.canv.offsetTop,
       }
     }
 
     mouseDown(e) {
-      console.log(e)
       const { mouseX, mouseY } = this.relativeCoors(e)
 
       if (
         this.checkCloseEnough(mouseX, this.canv.width - this.pointOffsetX) &&
         this.checkCloseEnough(mouseY, this.canv.height - this.pointOffsetY)
       ) {
-        this.dragBR = true
+        this.drag = true
       }
 
-      this.ctx.clearRect(0, 0, this.canv.width, this.canv.height)
       this.draw()
     }
 
@@ -297,11 +286,11 @@ window.onload = () => {
     }
 
     mouseUp() {
-      this.dragBR = false
+      this.drag = false
     }
 
     mouseMove(e) {
-      if (this.dragBR) {
+      if (this.drag) {
         let { mouseX, mouseY } = this.relativeCoors(e)
 
         if (mouseX < this.minSizeCanv) mouseX = this.minSizeCanv
@@ -310,49 +299,49 @@ window.onload = () => {
         this.canv.width = mouseX + this.pointOffsetX
         this.canv.height = mouseY + this.pointOffsetY
 
-        this.ctx.clearRect(0, 0, this.canv.width, this.canv.height)
         this.draw()
       }
     }
 
+    //!!! устаревший метод - заменен на mousemove вне canvas
     mouseOut(e) {
-      if (this.dragBR) {
-        let { mouseX, mouseY } = this.relativeCoors(e)
-
-        if (mouseX < this.minSizeCanv) mouseX = this.minSizeCanv
-        if (mouseY < this.minSizeCanv) mouseY = this.minSizeCanv
-
-        this.canv.width = mouseX + this.pointOffsetX
-        this.canv.height = mouseY + this.pointOffsetY
-        this.ctx.clearRect(0, 0, this.canv.width, this.canv.height)
-        this.draw()
-      }
+      // if (this.drag) {
+      //   let { mouseX, mouseY } = this.relativeCoors(e)
+      //   if (mouseX < this.minSizeCanv) mouseX = this.minSizeCanv
+      //   if (mouseY < this.minSizeCanv) mouseY = this.minSizeCanv
+      //   this.canv.width = mouseX + this.pointOffsetX
+      //   this.canv.height = mouseY + this.pointOffsetY
+      //   this.ctx.clearRect(0, 0, this.canv.width, this.canv.height)
+      //   this.draw()
+      // }
     }
 
     drawCircle(x, y, radius) {
+      // рисуем круг ресайза
       this.ctx.fillStyle = '#FF0000'
       this.ctx.beginPath()
       this.ctx.arc(x, y, radius, 0, 2 * Math.PI)
       this.ctx.fill()
-      // this.ctx.fillStyle = 'black'
 
+      // рисуем стрелки в круге
       let i = 3
       let k = 1.2
+      let u = 2
       this.ctx.beginPath()
       this.ctx.strokeStyle = 'black'
       this.ctx.lineWidth = 1
-      this.ctx.moveTo(x - radius / i - 2, y - radius / i + 2)
+      this.ctx.moveTo(x - radius / i - u, y - radius / i + u)
       this.ctx.lineTo(x - radius / k, y)
-      this.ctx.lineTo(x - radius / i - 2, y + radius / i - 2)
-      this.ctx.moveTo(x + radius / i + 2, y - radius / i + 2)
+      this.ctx.lineTo(x - radius / i - u, y + radius / i - u)
+      this.ctx.moveTo(x + radius / i + u, y - radius / i + u)
       this.ctx.lineTo(x + radius / k, y)
-      this.ctx.lineTo(x + radius / i + 2, y + radius / i - 2)
-      this.ctx.moveTo(x - radius / i + 2, y - radius / i - 2)
+      this.ctx.lineTo(x + radius / i + u, y + radius / i - u)
+      this.ctx.moveTo(x - radius / i + u, y - radius / i - u)
       this.ctx.lineTo(x, y - radius / k)
-      this.ctx.lineTo(x + radius / i - 2, y - radius / i - 2)
-      this.ctx.moveTo(x - radius / i + 2, y + radius / i + 2)
+      this.ctx.lineTo(x + radius / i - u, y - radius / i - u)
+      this.ctx.moveTo(x - radius / i + u, y + radius / i + u)
       this.ctx.lineTo(x, y + radius / k)
-      this.ctx.lineTo(x + radius / i - 2, y + radius / i + 2)
+      this.ctx.lineTo(x + radius / i - u, y + radius / i + u)
       this.ctx.stroke()
     }
 
@@ -374,7 +363,7 @@ window.onload = () => {
   canvasMas.push(new drawCanvas(canv3, mas3))
 
   //пробрасываем отжатие мышки во все canvas, в случае если мышку отжали вне canvas
-  document.body.addEventListener(
+  window.addEventListener(
     'mouseup',
     (e) => {
       canvasMas.forEach((canv) => canv.mouseUp())
@@ -382,6 +371,16 @@ window.onload = () => {
     false
   )
 
+  //пробрасываем движение мышки во все canvas, в случае если мышка во время ресайза вышла за пределы canvas
+  window.addEventListener(
+    'mousemove',
+    (e) => {
+      canvasMas.forEach((canv) => canv.mouseMove(e))
+    },
+    false
+  )
+
+  // отрисовка всех canvas
   drawAll = () => {
     canvasMas.forEach((canv) => canv.draw())
   }
