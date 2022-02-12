@@ -10,6 +10,10 @@ window.onload = () => {
   btnAdd2.addEventListener('click', () => addString(tab2))
   btnCalculate.addEventListener('click', () => calculate(tab1, tab2, tab3))
 
+  let mas1 = []
+  let mas2 = []
+  let mas3 = []
+
   const addString = (tab, withBtn = true) => {
     const num =
       'str' +
@@ -36,11 +40,17 @@ window.onload = () => {
   }
 
   const calculate = (inTab1, inTab2, inTab3) => {
-    const tabLegth = Math.min(getTabLegth(inTab1), getTabLegth(inTab2))
+    const tab1Legth = getTabLegth(inTab1)
+    const tab2Legth = getTabLegth(inTab2)
+    const tab3Legth = Math.min(tab1Legth, tab2Legth)
+
+    mas1.length = 0
+    mas2.length = 0
+    mas3.length = 0
 
     let currentTabLegth = getTabLegth(inTab3)
-    while (currentTabLegth !== tabLegth) {
-      if (currentTabLegth > tabLegth) {
+    while (currentTabLegth !== tab3Legth) {
+      if (currentTabLegth > tab3Legth) {
         inTab3
           .querySelector('tbody')
           .querySelector(
@@ -53,16 +63,34 @@ window.onload = () => {
       currentTabLegth = getTabLegth(inTab3)
     }
 
-    for (let index = 1; index < tabLegth + 1; index++) {
-      getTabInput(inTab3, index, 'x').value =
+    for (let index = 1; index < tab1Legth + 1; index++) {
+      const x = Number(getTabInput(inTab1, index, 'x').value)
+      const y = Number(getTabInput(inTab1, index, 'y').value)
+      mas1.push({ x, y })
+    }
+
+    for (let index = 1; index < tab2Legth + 1; index++) {
+      const x = Number(getTabInput(inTab2, index, 'x').value)
+      const y = Number(getTabInput(inTab2, index, 'y').value)
+      mas2.push({ x, y })
+    }
+
+    for (let index = 1; index < tab3Legth + 1; index++) {
+      const x =
         (Number(getTabInput(inTab1, index, 'x').value) +
           Number(getTabInput(inTab2, index, 'x').value)) /
         2
-      getTabInput(inTab3, index, 'y').value =
+      const y =
         (Number(getTabInput(inTab1, index, 'y').value) +
           Number(getTabInput(inTab2, index, 'y').value)) /
         2
+      mas3.push({ x, y })
+
+      getTabInput(inTab3, index, 'x').value = x
+      getTabInput(inTab3, index, 'y').value = y
     }
+
+    drawAll()
   }
 
   const getTabLegth = (tabl) => {
@@ -75,14 +103,7 @@ window.onload = () => {
       .querySelector(`#inputstr${tabl.id.slice(-1)}${str}${vector}`)
   }
 
-  let mas = [
-    { x: -10.43, y: 2 },
-    { x: 3, y: 10 },
-    { x: 15, y: 40 },
-    { x: 120, y: 110.8 },
-  ]
-
-  //сласс отрисовки графиков
+  //класс отрисовки графиков
   class drawCanvas {
     constructor(canv, mas) {
       this.indent = 40 //отступ графика от края
@@ -115,6 +136,11 @@ window.onload = () => {
     //отрисовка
     draw = () => {
       let { canv, ctx, mas, indent, step } = this
+
+      if (mas.length === 0) mas.push({ x: 0, y: 0 })
+      //обнуление
+      ctx.fillStyle = 'white'
+      ctx.fillRect(0, 0, canv.width, canv.height)
 
       let min = Number.MAX_VALUE
       let max = Number.MIN_VALUE
@@ -202,8 +228,7 @@ window.onload = () => {
       }
 
       //рисуем график
-
-      ctx.fillStyle = 'black' // Задаём чёрный цвет для линий
+      ctx.strokeStyle = '#7a1959' // Задаём цвет для линий
       ctx.lineWidth = 3.0 // Ширина линии
       let di = max - min
       let ourWidth =
@@ -216,7 +241,11 @@ window.onload = () => {
         Math.max(iterationY - iterationX, 0) * step
 
       for (let index = 0; index < mas.length; index++) {
-        // ctx.fillText((min + numberStep * i).toFixed(2), indent - 30, y)
+        ctx.fillText(
+          mas[index].x.toFixed(2) + ' ' + mas[index].y.toFixed(2),
+          indent + step + (mas[index].x - min) * (ourWidth / di),
+          canv.height - indent - step - (mas[index].y - min) * (ourHeight / di)
+        )
         if (index < mas.length - 1) {
           ctx.beginPath()
           ctx.moveTo(
@@ -236,9 +265,7 @@ window.onload = () => {
           ctx.stroke()
         }
       }
-      //обнуление
-      // ctx.fillStyle = 'white'
-      // ctx.fillRect(0, 0, canv.width, canv.height)
+
       this.drawHandles()
     }
 
@@ -338,21 +365,24 @@ window.onload = () => {
     }
   }
 
+  let canvasMas = []
   let canv1 = document.querySelector('#canvas1')
-  let newCanv1 = new drawCanvas(canv1, mas)
+  canvasMas.push(new drawCanvas(canv1, mas1))
   let canv2 = document.querySelector('#canvas2')
-  let newCanv2 = new drawCanvas(canv2, mas)
+  canvasMas.push(new drawCanvas(canv2, mas2))
   let canv3 = document.querySelector('#canvas3')
-  let newCanv3 = new drawCanvas(canv3, mas)
+  canvasMas.push(new drawCanvas(canv3, mas3))
 
   //пробрасываем отжатие мышки во все canvas, в случае если мышку отжали вне canvas
   document.body.addEventListener(
     'mouseup',
     (e) => {
-      newCanv1.mouseUp()
-      newCanv2.mouseUp()
-      newCanv3.mouseUp()
+      canvasMas.forEach((canv) => canv.mouseUp())
     },
     false
   )
+
+  drawAll = () => {
+    canvasMas.forEach((canv) => canv.draw())
+  }
 }
