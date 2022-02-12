@@ -27,7 +27,6 @@ table {
 table th,
 table td {
   padding: 2px 2px;
-  width: 30px;
 }
 
 tr th:first-child,
@@ -41,5 +40,10 @@ tr td:last-child {
 }
 
 table input[type='number'] {
-  width: 30px;
+  width: 40px;
+}
+
+canvas {
+  display: block;
+  border: 1px solid black;
 }
