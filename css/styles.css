@@ -8,6 +8,15 @@
   margin: 0 auto;
 }
 
+body {
+  min-height: 2000px;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  align-items: center;
+  margin: 0 auto;
+}
+
 .btn {
   margin-top: 2px;
   width: 100%;
@@ -46,4 +55,5 @@ table input[type='number'] {
 canvas {
   display: block;
   border: 1px solid black;
+  margin: 4px;
 }
