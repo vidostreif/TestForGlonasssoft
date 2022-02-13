@@ -8,15 +8,6 @@
   margin: 0 auto;
 }
 
-body {
-  min-height: 2000px;
-  display: flex;
-  flex-direction: column;
-  /* justify-content: center; */
-  align-items: center;
-  margin: 0 auto;
-}
-
 .btn {
   margin-top: 2px;
   width: 100%;
@@ -24,6 +15,15 @@ body {
 
 .table_div {
   margin: 4px;
+}
+
+body {
+  min-height: 2000px;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  align-items: center;
+  margin: 0 auto;
 }
 
 table {
