@@ -20,26 +20,18 @@ window.onload = () => {
   let mas3 = []
 
   // добавление строки в таблицу
-  const addString = (tab, withBtn = true) => {
-    const num =
-      'str' +
-      tab.id.slice(-1) +
-      (tab.querySelector('tbody').querySelectorAll('tr').length + 1)
+  const addString = (tab, withBtn = true, readonly = false) => {
+    const num = 'str' + tab.id.slice(-1) + (tab.querySelector('tbody').querySelectorAll('tr').length + 1)
 
     const newTr = document.createElement('tr')
     newTr.id = num
-    newTr.innerHTML = `<td><input type="number" size="1" id="input${num}x" value="1"></td>
-                    <td><input type="number" size="1" id="input${num}y" value="1"></td>`
+    newTr.innerHTML = `<td><input type="number" size="1" id="input${num}x" value="1" ${readonly ? 'readonly' : ''}></td>
+                    <td><input type="number" size="1" id="input${num}y" value="1" ${readonly ? 'readonly' : ''}></td>`
 
     if (withBtn) {
-      newTr.insertAdjacentHTML(
-        'beforeend',
-        `<td><button id="btnDel${num}">Delete</button></td>`
-      )
+      newTr.insertAdjacentHTML('beforeend', `<td><button id="btnDel${num}">Delete</button></td>`)
 
-      newTr
-        .querySelector(`#btnDel${num}`)
-        .addEventListener('click', () => removeString(tab, newTr))
+      newTr.querySelector(`#btnDel${num}`).addEventListener('click', () => removeString(tab, newTr))
     }
 
     tab.querySelector('tbody').append(newTr)
@@ -83,12 +75,10 @@ window.onload = () => {
       if (currentTabLegth > tab3Legth) {
         inTab3
           .querySelector('tbody')
-          .querySelector(
-            `#str${inTab3.id.slice(-1) + currentTabLegth.toString()}`
-          )
+          .querySelector(`#str${inTab3.id.slice(-1) + currentTabLegth.toString()}`)
           .remove()
       } else {
-        addString(inTab3, false)
+        addString(inTab3, false, true)
       }
       currentTabLegth = getTabLegth(inTab3)
     }
@@ -106,14 +96,8 @@ window.onload = () => {
     }
 
     for (let index = 1; index < tab3Legth + 1; index++) {
-      const x =
-        (Number(getTabInput(inTab1, index, 'x').value) +
-          Number(getTabInput(inTab2, index, 'x').value)) /
-        2
-      const y =
-        (Number(getTabInput(inTab1, index, 'y').value) +
-          Number(getTabInput(inTab2, index, 'y').value)) /
-        2
+      const x = (Number(getTabInput(inTab1, index, 'x').value) + Number(getTabInput(inTab2, index, 'x').value)) / 2
+      const y = (Number(getTabInput(inTab1, index, 'y').value) + Number(getTabInput(inTab2, index, 'y').value)) / 2
       mas3.push({ x, y })
 
       getTabInput(inTab3, index, 'x').value = x
@@ -130,9 +114,7 @@ window.onload = () => {
 
   // получить input из таблицы
   const getTabInput = (tabl, str, vector) => {
-    return tabl
-      .querySelector('tbody')
-      .querySelector(`#inputstr${tabl.id.slice(-1)}${str}${vector}`)
+    return tabl.querySelector('tbody').querySelector(`#inputstr${tabl.id.slice(-1)}${str}${vector}`)
   }
 
   // класс отрисовки графиков
@@ -186,9 +168,7 @@ window.onload = () => {
       }
 
       // шаг чисел
-      let numberStep =
-        (max - min) /
-        Math.ceil((Math.min(width, height) - indPlusStep - step - 15) / step)
+      let numberStep = (max - min) / Math.ceil((Math.min(width, height) - indPlusStep - step - 15) / step)
 
       // рисуем направляющие
       ctx.fillStyle = 'black'
@@ -206,11 +186,7 @@ window.onload = () => {
       // цикл для отображения значений по X
       let iterX = 0 // количество отрисованных значений X
       for (let x = indPlusStep; x < width - 15; x += step, iterX++) {
-        ctx.fillText(
-          (min + numberStep * iterX).toFixed(2),
-          x - 10,
-          height - indent + (iterX % 2 === 0 ? 20 : 30)
-        )
+        ctx.fillText((min + numberStep * iterX).toFixed(2), x - 10, height - indent + (iterX % 2 === 0 ? 20 : 30))
         ctx.beginPath()
         ctx.moveTo(x, height - indent + 5)
         ctx.lineTo(x, height - indent)
@@ -258,8 +234,7 @@ window.onload = () => {
       ctx.lineWidth = 3.0 // ширина линии
       let di = max - min // рабочий диапазон
       let ourWidth = lastX - indPlusStep - Math.max(iterX - iterY, 0) * step // рабочий диапазон по ширине в px
-      let ourHeight =
-        height - indPlusStep - lastY - Math.max(iterY - iterX, 0) * step // рабочий диапазон по высоте в px
+      let ourHeight = height - indPlusStep - lastY - Math.max(iterY - iterX, 0) * step // рабочий диапазон по высоте в px
 
       for (let index = 0; index < mas.length; index++) {
         // вычисляем координаты точки
@@ -298,14 +273,8 @@ window.onload = () => {
       const { mouseX, mouseY } = this.relativeCoors(e)
       // если попали в круг изменения размера
       if (
-        this.checkCloseEnough(
-          mouseX,
-          this.canv.width - this.resizeCircleOffsetX
-        ) &&
-        this.checkCloseEnough(
-          mouseY,
-          this.canv.height - this.resizeCircleOffsetY
-        )
+        this.checkCloseEnough(mouseX, this.canv.width - this.resizeCircleOffsetX) &&
+        this.checkCloseEnough(mouseY, this.canv.height - this.resizeCircleOffsetY)
       ) {
         this.drag = true
       }
